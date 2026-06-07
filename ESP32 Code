@@ -1,0 +1,246 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include "DHT.h"
+
+// ================= WIFI =================
+const char* ssid = "haikal";
+const char* password = "10101010";
+
+String serverURL = "http://172.20.10.4:1880/sensor";
+
+// ================= PINS =================
+#define DHTPIN 27
+#define DHTTYPE DHT11
+
+#define PIR_PIN 13
+#define REED_PIN 15
+#define RAIN_PIN 4
+
+#define BUZZER_PIN 25
+
+// ================= OBJECTS =================
+DHT dht(DHTPIN, DHTTYPE);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+// ================= SETUP =================
+void setup() {
+
+  Serial.begin(115200);
+
+  dht.begin();
+
+  pinMode(PIR_PIN, INPUT);
+  pinMode(REED_PIN, INPUT_PULLUP);
+  pinMode(RAIN_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+
+  digitalWrite(BUZZER_PIN, LOW);
+
+  Wire.begin(21, 22);
+
+  lcd.init();
+  lcd.backlight();
+
+  lcd.setCursor(0, 0);
+  lcd.print("SMART WINDOW");
+  lcd.setCursor(0, 1);
+  lcd.print("Starting...");
+  delay(3000);
+  lcd.clear();
+
+  WiFi.begin(ssid, password);
+
+  Serial.print("Connecting to WiFi");
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("WiFi Connected!");
+  Serial.print("ESP32 IP: ");
+  Serial.println(WiFi.localIP());
+
+  lcd.setCursor(0, 0);
+  lcd.print("WiFi Connected");
+  delay(2000);
+  lcd.clear();
+}
+
+// ================= LOOP =================
+void loop() {
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi Lost. Reconnecting...");
+
+    WiFi.disconnect();
+    WiFi.begin(ssid, password);
+
+    int retry = 0;
+
+    while (WiFi.status() != WL_CONNECTED && retry < 20) {
+      delay(500);
+      Serial.print(".");
+      retry++;
+    }
+
+    Serial.println();
+  }
+
+  // ================= SENSOR READINGS =================
+  float temp = dht.readTemperature();
+  float hum = dht.readHumidity();
+
+  int motion = digitalRead(PIR_PIN);
+  int windowStatus = digitalRead(REED_PIN);
+  int rainDO = digitalRead(RAIN_PIN);
+
+  int rainStatus;
+
+  if (rainDO == 0) {
+    rainStatus = 1;   // Rain detected
+  } else {
+    rainStatus = 0;   // Dry
+  }
+
+  // ================= MOTION BUZZER =================
+
+if (motion == HIGH) {
+
+  Serial.println("MOTION DETECTED");
+
+  digitalWrite(BUZZER_PIN, HIGH);
+  delay(200);
+
+  digitalWrite(BUZZER_PIN, LOW);
+  delay(200);
+
+}
+else {
+
+  Serial.println("NO MOTION");
+
+  digitalWrite(BUZZER_PIN, LOW);
+
+  delay(100);
+}
+
+  // ================= LCD PAGE 1 =================
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print("T:");
+  lcd.print(temp, 1);
+  lcd.print("C");
+
+  lcd.setCursor(8, 0);
+  lcd.print("H:");
+  lcd.print(hum, 0);
+  lcd.print("%");
+
+  lcd.setCursor(0, 1);
+  lcd.print("SMART WINDOW");
+
+  delay(200);
+
+  // ================= LCD PAGE 2 =================
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+
+  if (motion == HIGH)
+    lcd.print("Motion:YES");
+  else
+    lcd.print("Motion:NO");
+
+  lcd.setCursor(0, 1);
+
+  if (windowStatus == 1)
+    lcd.print("Window:OPEN");
+  else
+    lcd.print("Window:CLOSE");
+
+  delay(200);
+
+  // ================= LCD PAGE 3 =================
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+
+  if (rainStatus == 1)
+    lcd.print("Rain:DETECTED");
+  else
+    lcd.print("Rain:DRY");
+
+  lcd.setCursor(0, 1);
+
+  if (WiFi.status() == WL_CONNECTED)
+    lcd.print("WiFi:CONNECT");
+  else
+    lcd.print("WiFi:DISCONNECT");
+
+  delay(200);
+
+  // ================= NODE RED =================
+  if (!isnan(temp) && !isnan(hum)) {
+
+    String url =
+      serverURL +
+      "?temp=" + String(temp, 1) +
+      "&hum=" + String(hum, 1) +
+      "&motion=" + String(motion) +
+      "&window=" + String(windowStatus) +
+      "&rain=" + String(rainStatus);
+
+    HTTPClient http;
+
+    Serial.println();
+    Serial.println("====================");
+    Serial.println("Sending Request:");
+    Serial.println(url);
+
+    http.begin(url);
+
+    int httpCode = http.GET();
+
+    Serial.print("HTTP Code: ");
+    Serial.println(httpCode);
+
+    if (httpCode > 0) {
+      String payload = http.getString();
+
+      Serial.println("Response:");
+      Serial.println(payload);
+    } else {
+      Serial.print("HTTP ERROR: ");
+      Serial.println(http.errorToString(httpCode));
+    }
+
+    Serial.print("Temp: ");
+    Serial.println(temp);
+
+    Serial.print("Humidity: ");
+    Serial.println(hum);
+
+    Serial.print("Motion: ");
+    Serial.println(motion);
+
+    Serial.print("Window: ");
+    Serial.println(windowStatus);
+
+    Serial.print("Rain DO: ");
+    Serial.println(rainDO);
+
+    Serial.print("Rain Status: ");
+    Serial.println(rainStatus);
+
+    http.end();
+  } else {
+    Serial.println("DHT11 ERROR");
+  }
+
+  delay(100);
+}
