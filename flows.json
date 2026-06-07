@@ -1,0 +1,462 @@
+[
+    {
+        "id": "9018b18f5970f199",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "a91f41655d5872c5",
+        "type": "http in",
+        "z": "9018b18f5970f199",
+        "name": "",
+        "url": "/sensor",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 90,
+        "y": 180,
+        "wires": [
+            [
+                "8330821e6cfe8dfd"
+            ]
+        ]
+    },
+    {
+        "id": "8330821e6cfe8dfd",
+        "type": "function",
+        "z": "9018b18f5970f199",
+        "name": "function 1",
+        "func": "msg.payload = {\n    temperature: msg.req.query.temp,\n    humidity: msg.req.query.hum,\n    motion: msg.req.query.motion,\n    window: msg.req.query.window,\n    rain: msg.req.query.rain\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 300,
+        "wires": [
+            [
+                "ee4fe805f6eb0913",
+                "d9a85b1a9df26aef",
+                "fe99683d1f7d24e0",
+                "a11ae8b327b41236",
+                "bb3df80ab0c154c3",
+                "fc7dae6dcc7f126f",
+                "48914d9e59ac9c4e",
+                "c714f1fe39314b22",
+                "e4eab45ab70d7392"
+            ]
+        ]
+    },
+    {
+        "id": "ee4fe805f6eb0913",
+        "type": "debug",
+        "z": "9018b18f5970f199",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 500,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "e4906cd9eddf16ec",
+        "type": "ui_gauge",
+        "z": "9018b18f5970f199",
+        "name": "",
+        "group": "d27867ef3c49a3df",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Temperature",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 330,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "d9a85b1a9df26aef",
+        "type": "change",
+        "z": "9018b18f5970f199",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.temperature",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 180,
+        "wires": [
+            [
+                "e4906cd9eddf16ec"
+            ]
+        ]
+    },
+    {
+        "id": "b68bc77ba1bdfb7f",
+        "type": "ui_gauge",
+        "z": "9018b18f5970f199",
+        "name": "",
+        "group": "d27867ef3c49a3df",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Humidity",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 440,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "fe99683d1f7d24e0",
+        "type": "function",
+        "z": "9018b18f5970f199",
+        "name": "function 2",
+        "func": "msg.payload = Number(msg.payload.humidity);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 380,
+        "wires": [
+            [
+                "b68bc77ba1bdfb7f"
+            ]
+        ]
+    },
+    {
+        "id": "a11ae8b327b41236",
+        "type": "function",
+        "z": "9018b18f5970f199",
+        "name": "function 3",
+        "func": "if (msg.payload.window == \"0\") {\n    msg.payload = \"CLOSED\";\n} else {\n    msg.payload = \"OPEN\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 440,
+        "wires": [
+            [
+                "dd7bd057289b4876"
+            ]
+        ]
+    },
+    {
+        "id": "dd7bd057289b4876",
+        "type": "ui_text",
+        "z": "9018b18f5970f199",
+        "group": "d27867ef3c49a3df",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Window Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 460,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "bb3df80ab0c154c3",
+        "type": "function",
+        "z": "9018b18f5970f199",
+        "name": "function 4",
+        "func": "if (msg.payload.rain == \"0\") {\n    msg.payload = \"RAIN DETECTED\";\n} else {\n    msg.payload = \"NO RAIN\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 500,
+        "wires": [
+            [
+                "f6817f5926c65814"
+            ]
+        ]
+    },
+    {
+        "id": "f6817f5926c65814",
+        "type": "ui_text",
+        "z": "9018b18f5970f199",
+        "group": "d27867ef3c49a3df",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Rain Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 450,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "fc7dae6dcc7f126f",
+        "type": "function",
+        "z": "9018b18f5970f199",
+        "name": "function 5",
+        "func": "if (msg.payload.motion == \"1\") {\n    msg.payload = \"MOTION DETECTED\";\n} else {\n    msg.payload = \"NO MOTION\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 560,
+        "wires": [
+            [
+                "cc57b1de84d87b1f"
+            ]
+        ]
+    },
+    {
+        "id": "cc57b1de84d87b1f",
+        "type": "ui_text",
+        "z": "9018b18f5970f199",
+        "group": "d27867ef3c49a3df",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Motion Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 460,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "48914d9e59ac9c4e",
+        "type": "function",
+        "z": "9018b18f5970f199",
+        "name": "function 6",
+        "func": "if (msg.payload.motion == \"1\" && msg.payload.window == \"1\") {\n    msg.payload = \"⚠ ALERT: Motion Detected While Window Open\";\n} else {\n    msg.payload = \"System Normal\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 620,
+        "wires": [
+            [
+                "f285f8e209d4862f"
+            ]
+        ]
+    },
+    {
+        "id": "f285f8e209d4862f",
+        "type": "ui_text",
+        "z": "9018b18f5970f199",
+        "group": "d27867ef3c49a3df",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Security Alert",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 450,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "c714f1fe39314b22",
+        "type": "http response",
+        "z": "9018b18f5970f199",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 510,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "e4eab45ab70d7392",
+        "type": "switch",
+        "z": "9018b18f5970f199",
+        "name": "",
+        "property": "payload.motion",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 590,
+        "y": 340,
+        "wires": [
+            [
+                "5c256b0494520ef5"
+            ]
+        ]
+    },
+    {
+        "id": "5c256b0494520ef5",
+        "type": "function",
+        "z": "9018b18f5970f199",
+        "name": "function 7",
+        "func": "let now = new Date();\n\nmsg.payload =\n    \"Motion Detected at \" +\n    now.toLocaleTimeString();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 340,
+        "wires": [
+            [
+                "83df3d286f5af8ec",
+                "055349fbef110f95"
+            ]
+        ]
+    },
+    {
+        "id": "83df3d286f5af8ec",
+        "type": "debug",
+        "z": "9018b18f5970f199",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "055349fbef110f95",
+        "type": "ui_text",
+        "z": "9018b18f5970f199",
+        "group": "d27867ef3c49a3df",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Intrusion Log",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 830,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "d27867ef3c49a3df",
+        "type": "ui_group",
+        "name": "Monitoring",
+        "tab": "4521b722daf731a7",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "4521b722daf731a7",
+        "type": "ui_tab",
+        "name": "Smart Window",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "4cfcf21cf7c5ad54",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
